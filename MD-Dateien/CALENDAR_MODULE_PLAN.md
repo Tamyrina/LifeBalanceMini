@@ -137,15 +137,23 @@ The Calendar menu should offer:
 1. Show today
 2. Show specific day
 3. Show current week
-4. Previous
-5. Next
-6. Move task
-7. Change task duration
+
 0. Back
 ```
 
 The exact menu can be adjusted if needed, but it should stay simple.
 
+After displaying a day or week view, the user can open a small action menu.
+
+The action menu offers:
+1. Previous day/week
+2. Next day/week
+3. Move task
+4. Change task Duration
+
+0. Back to calendar menu
+
+This keeps the main calendar menu simple and places editing actions where the user can actually see the scheduled tasks.
 ---
 
 ## Architecture

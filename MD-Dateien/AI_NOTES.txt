@@ -1,0 +1,67 @@
+Here is a detailed review of the current Java codebase against the provided architectural plans and guidelines.
+
+  ---
+
+  1. Modularity
+
+   * Default Package Layout: Currently, all classes are placed in the default package (src/). While this keeps things
+     simple for absolute beginners, as the project grows, introducing small sub-packages would significantly improve
+     modularity:
+       * lifebalance.model (for Project, Task)
+       * lifebalance.service (for ProjectService, TaskService, CalendarService, DashboardService)
+       * lifebalance.repository (for ProjectRepository, TaskRepository)
+       * lifebalance.menu (for the Console UI menus)
+   * Missing Core Modules:
+       * Dashboard Module: Completely unimplemented. There are no DashboardService or DashboardMenu classes, and
+         ConsoleMenu.showDashboard() only contains a stub saying "Noch keine Inhalte implementiert."
+       * Calendar Extensions: Many planned calendar features outlined in CALENDAR_MODULE_PLAN.md (such as navigating
+         previous/next, jumping to a date, shifting task dates, or changing task durations) are completely missing in
+         CalendarMenu and CalendarService.
+
+  ---
+
+  2. Separation of Responsibilities
+
+   * Service Coordination & Project Progress:
+       * The business rules dictate that a project's status and progress are calculated dynamically from its tasks.
+       * Currently, ProjectService has unimplemented stub methods: getCompletedTaskCount(int), getTotalTaskCount(int),
+         and getProgress(int).
+       * Because ProjectService has no dependency on TaskService, it has no access to tasks and cannot perform these
+         calculations.
+       * Suggestion: Pass TaskService as a dependency into the ProjectService constructor so it can query tasks
+         associated with a project name or ID.
+   * Automated Project Completion Status:
+       * Currently, Project holds a stateful completed boolean property saved/loaded from projects.txt. This can easily
+         get out of sync with actual task statuses.
+       * Suggestion: Recalculate and update the project's completion state dynamically whenever tasks are loaded,
+         completed, added, or modified, or make it a calculated runtime-only field if persistence is not strictly
+         necessary.
+
+  ---
+
+  3. Readability & Code Style
+
+   * Indentation & Formatting Inconsistencies:
+       * Task.java: The private String project; attribute, its getter, and setter have formatting/indentation
+         mismatches.
+       * TaskRepository.java: There are block indentation inconsistencies around the line checking if (parts.length ==
+         7).
+   * Date Parsing Bug (Critical):
+       * In CalendarService.getTasksForWeek(String startDate):
+
+   1         LocalDate date = LocalDate.parse(startDate.replace(".", "-"));
+          If startDate is "29.06.2026", replacing dots with dashes yields "29-06-2026". LocalDate.parse() expects
+  YYYY-MM-DD (ISO format) by default and will throw a DateTimeParseException.
+       * Suggestion: Use a simple DateTimeFormatter (e.g., DateTimeFormatter.ofPattern("dd.MM.yyyy")) for parsing and
+         formatting consistently across the app.
+
+  ---
+
+  4. Beginner-Friendly Java Code
+
+   * Excellent Simplicity: The code is highly legible, avoiding advanced, confusing paradigms (like Streams API, complex
+     design pattern frameworks, or Dependency Injection libraries). It relies on standard for loops, sequential checks,
+     and standard collections (ArrayList). This must be maintained when implementing new features.
+   * Console UI Cleanliness: Reading input and parsing integers via Integer.parseInt(scanner.nextLine()) is simple, but
+     it lacks basic error handling if the user inputs a non-numeric string. Adding a lightweight helper method for safe
+     integer scanning would prevent crashes while keeping the code accessible to beginners.

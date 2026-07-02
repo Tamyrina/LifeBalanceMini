@@ -45,4 +45,16 @@ public class CalendarService {
         }
         return weekDates;
     }
+
+    public ArrayList<Task> getAllTasks() {
+        return taskService.getAllTasks();
+    }
+
+    public void moveTask(int index, String newDueDate, String newStartTime) {
+        taskService.moveTask(index, newDueDate, newStartTime);
+    }
+
+    public void changeDuration(int index, int newEstimatedDuration) {
+        taskService.changeDuration(index, newEstimatedDuration);
+    }
 }

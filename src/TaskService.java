@@ -34,6 +34,23 @@ public class TaskService {
         }
     }
 
+    public void moveTask(int index, String newDueDate, String newStartTime) {
+        if (index >= 0 && index < taskList.size()) {
+            Task task = taskList.get(index);
+            task.setDueDate(newDueDate);
+            task.setStartTime(newStartTime);
+            repository.saveTasks(taskList);
+        }
+    }
+
+    public void changeDuration(int index, int newEstimatedDuration) {
+        if (index >= 0 && index < taskList.size()) {
+            Task task = taskList.get(index);
+            task.setEstimatedDuration(newEstimatedDuration);
+            repository.saveTasks(taskList);
+        }
+    }
+
     public void markTaskAsCompleted(int index) {
         if (index >= 0 && index < taskList.size()) {
             taskList.get(index).setCompleted(true);
