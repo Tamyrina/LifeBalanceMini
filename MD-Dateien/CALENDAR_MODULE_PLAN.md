@@ -23,7 +23,6 @@ The Calendar module can:
 - show a week
 - navigate to the previous day or week
 - navigate to the next day or week
-- jump to a specific date
 - show calculated start and end times
 - detect overlapping tasks
 - move a task to another date or time
@@ -140,9 +139,8 @@ The Calendar menu should offer:
 3. Show current week
 4. Previous
 5. Next
-6. Jump to date
-7. Move task
-8. Change task duration
+6. Move task
+7. Change task duration
 0. Back
 ```
 

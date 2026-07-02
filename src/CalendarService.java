@@ -36,41 +36,13 @@ public class CalendarService {
         }
         return tasksForDate;
     }
-    public ArrayList<Task> getTasksForWeek(String startDate) {
-    ArrayList<Task> weekTasks = new ArrayList<>();
-    LocalDate date = LocalDate.parse(startDate.replace(".", "-"));
-    LocalDate startOfWeek = date.minusDays(date.getDayOfWeek().getValue() - 1);
-    
-    for (int i = 0; i < 7; i++) {
-        LocalDate currentDay = startOfWeek.plusDays(i);
-        String dayString = String.format("%02d.%02d.%04d", 
-            currentDay.getDayOfMonth(),
-            currentDay.getMonthValue(),
-            currentDay.getYear());
-        weekTasks.addAll(getTasksForDate(dayString));
-    }
-    return weekTasks;
-}
 
-public ArrayList<LocalDate> getWeekDatesForCurrentWeek() {
-    ArrayList<LocalDate> weekDates = new ArrayList<>();
-    LocalDate today = LocalDate.now();
-    LocalDate startOfWeek = today.minusDays(today.getDayOfWeek().getValue() - 1);
-    for (int i = 0; i < 7; i++) {
-        weekDates.add(startOfWeek.plusDays(i));
+    public ArrayList<LocalDate> getWeekDates(LocalDate date) {
+        ArrayList<LocalDate> weekDates = new ArrayList<>();
+        LocalDate startOfWeek = date.minusDays(date.getDayOfWeek().getValue() - 1);
+        for (int i = 0; i < 7; i++) {
+            weekDates.add(startOfWeek.plusDays(i));
+        }
+        return weekDates;
     }
-    return weekDates;
-}
-
-public ArrayList<Task> getTasksForWeekForCurrentWeek() {
-    ArrayList<Task> weekTasks = new ArrayList<>();
-    for (LocalDate date : getWeekDatesForCurrentWeek()) {
-        String dayString = String.format("%02d.%02d.%04d", 
-            date.getDayOfMonth(),
-            date.getMonthValue(),
-            date.getYear());
-        weekTasks.addAll(getTasksForDate(dayString));
-    }
-    return weekTasks;
-}
 }
