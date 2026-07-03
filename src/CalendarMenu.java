@@ -101,7 +101,7 @@ public class CalendarMenu {
                 System.out.println("2. Nächste Woche");
             }
             System.out.println("3. Aufgabe verschieben");
-            System.out.println("4. Aufgabe dauer ändern");
+            System.out.println("4. Aufgabe Dauer ändern");
             System.out.println("0. Zurück zum Kalender");
             System.out.print("Auswahl: ");
 
@@ -182,7 +182,6 @@ public class CalendarMenu {
         calendarService.moveTask(taskListIndex, newDueDate, newStartTime);
         System.out.println("Aufgabe verschoben.");
         
-        // Ansicht erneuern
         if (viewMode.equals("DAY")) {
             showDayWithCurrentDate();
         } else {
@@ -192,7 +191,7 @@ public class CalendarMenu {
 
     private void changeDuration() {
         System.out.println();
-        System.out.println("=== Aufgabe dauer ändern ===");
+        System.out.println("=== Aufgabe Dauer ändern ===");
         
         if (lastShownTasks == null || lastShownTasks.isEmpty()) {
             System.out.println("Keine Aufgaben angezeigt.");
@@ -217,7 +216,6 @@ public class CalendarMenu {
         calendarService.changeDuration(taskListIndex, newDuration);
         System.out.println("Dauer geändert.");
         
-        // Ansicht erneuern
         if (viewMode.equals("DAY")) {
             showDayWithCurrentDate();
         } else {
@@ -230,9 +228,22 @@ public class CalendarMenu {
             System.out.println("Keine Aufgaben geplant.");
         } else {
             for (Task task : tasks) {
-                System.out.println(task.getStartTime() + " - " + task.getTitle() + " (" + task.getProject() + ")");
+                String endTime = calculateEndTime(task.getStartTime(), task.getEstimatedDuration());
+                System.out.println(task.getStartTime() + " - " + endTime + "   " + task.getTitle() + " (" + task.getProject() + ")");
             }
         }
+    }
+
+    private String calculateEndTime(String startTime, int estimatedDuration) {
+        String[] parts = startTime.split(":");
+        int hour = Integer.parseInt(parts[0]);
+        int minute = Integer.parseInt(parts[1]);
+        
+        int totalMinutes = hour * 60 + minute + estimatedDuration;
+        int endHour = totalMinutes / 60;
+        int endMinute = totalMinutes % 60;
+        
+        return String.format("%02d:%02d", endHour, endMinute);
     }
 
     private String formatDate(LocalDate date) {
