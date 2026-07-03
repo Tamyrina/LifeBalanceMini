@@ -34,10 +34,11 @@ public class DashboardMenu {
             System.out.println("Keine aktiven Projekte.");
         } else {
             for (Project project : dashboardService.getActiveProjects()) {
+                System.out.println(project.getTitle());
                 int progress = dashboardService.getProjectProgress(project.getTitle());
                 String bar = dashboardService.getProgressBar(progress);
-                System.out.println(project.getTitle());
-                System.out.println(bar);
+                int[] counts = dashboardService.getTaskCountsForProject(project.getTitle());
+                System.out.println(bar + " " + counts[1] + "/" + counts[0] + " Aufgaben erledigt");
             }
         }
     }

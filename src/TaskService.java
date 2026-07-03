@@ -19,6 +19,16 @@ public class TaskService {
         return taskList;
     }
 
+    public ArrayList<Task> getTasksForProject(String projectName) {
+        ArrayList<Task> projectTasks = new ArrayList<>();
+        for (Task task : taskList) {
+            if (task.getProject().equals(projectName)) {
+                projectTasks.add(task);
+            }
+        }
+        return projectTasks;
+    }
+
     public void updateTask(int index, String newTitle, String newDueDate, String newStartTime, int newEstimatedDuration, String newRepeat, String newProject) {
         if (index >= 0 && index < taskList.size()) {
             Task task = taskList.get(index);

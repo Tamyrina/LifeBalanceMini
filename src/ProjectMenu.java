@@ -1,11 +1,19 @@
 import java.util.Scanner;
+import java.util.ArrayList;
 
 public class ProjectMenu {
     private ProjectService projectService;
+    private TaskService taskService;
     private Scanner scanner;
 
     public ProjectMenu(ProjectService projectService) {
         this.projectService = projectService;
+        this.scanner = new Scanner(System.in);
+    }
+
+    public ProjectMenu(ProjectService projectService, TaskService taskService) {
+        this.projectService = projectService;
+        this.taskService = taskService;
         this.scanner = new Scanner(System.in);
     }
 
@@ -19,6 +27,7 @@ public class ProjectMenu {
             System.out.println("2. Projekte anzeigen");
             System.out.println("3. Projekt löschen");
             System.out.println("4. Projekt bearbeiten");
+            System.out.println("5. Aufgaben eines Projekts anzeigen");
             System.out.println("0. Zurück");
             System.out.print("Auswahl: ");
 
@@ -32,6 +41,8 @@ public class ProjectMenu {
                 deleteProject();
             } else if (input.equals("4")) {
                 editProject();
+            } else if (input.equals("5")) {
+                showProjectTasks();
             } else if (input.equals("0")) {
                 running = false;
             } else {
@@ -125,6 +136,46 @@ public class ProjectMenu {
         projectService.updateProject(index, newTitle, newCategory, newDueDate, newDueTime);
 
         System.out.println("Projekt " + (index + 1) + " wurde bearbeitet.");
+    }
+
+    private void showProjectTasks() {
+        System.out.println();
+        System.out.println("Aufgaben eines Projekts anzeigen");
+
+        if (projectService.getAllProjects().isEmpty()) {
+            System.out.println("Es gibt keine Projekte.");
+            return;
+        }
+
+        showProjects();
+
+        int index = readProjectIndex("Welches Projekt? Nummer eingeben (0 für zurück): ");
+        if (index < 0) return;
+
+        String projectName = projectService.getAllProjects().get(index).getTitle();
+        ArrayList<Task> tasks = getTasksForProject(projectName);
+
+        System.out.println();
+        System.out.println("Aufgaben für Projekt: " + projectName);
+        if (tasks.isEmpty()) {
+            System.out.println("Keine Aufgaben vorhanden.");
+        } else {
+            for (int i = 0; i < tasks.size(); i++) {
+                Task task = tasks.get(i);
+                String status = task.isCompleted() ? "erledigt" : "offen";
+                System.out.println((i + 1) + ". " + task.getTitle() + 
+                    " | " + task.getDueDate() + " " + task.getStartTime() + 
+                    " | " + task.getEstimatedDuration() + " min" +
+                    " | " + status);
+            }
+        }
+    }
+
+    private ArrayList<Task> getTasksForProject(String projectName) {
+        if (taskService == null) {
+            return new ArrayList<>();
+        }
+        return taskService.getTasksForProject(projectName);
     }
 
     private int readProjectIndex(String prompt) {

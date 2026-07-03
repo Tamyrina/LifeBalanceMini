@@ -38,6 +38,13 @@ public class DashboardService {
     }
 
     public int getProjectProgress(String projectTitle) {
+        int[] counts = getTaskCountsForProject(projectTitle);
+        int total = counts[0];
+        int completed = counts[1];
+        return total == 0 ? 0 : (completed * 100 / total);
+    }
+
+    public int[] getTaskCountsForProject(String projectTitle) {
         int total = 0;
         int completed = 0;
         for (Task task : taskService.getAllTasks()) {
@@ -48,7 +55,7 @@ public class DashboardService {
                 }
             }
         }
-        return total == 0 ? 0 : (completed * 100 / total);
+        return new int[]{total, completed};
     }
 
     public String getProgressBar(int progress) {

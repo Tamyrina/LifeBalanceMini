@@ -29,19 +29,22 @@ public class ConsoleMenu {
             // Navigationsmenü
             System.out.println();
             System.out.println("=== Navigation ===");
-            System.out.println("1. Projekte");
-            System.out.println("2. Aufgaben");
-            System.out.println("3. Kalender");
+            System.out.println("1. Dashboard");
+            System.out.println("2. Projekte");
+            System.out.println("3. Aufgaben");
+            System.out.println("4. Kalender");
             System.out.println("0. Beenden");
             System.out.print("Auswahl: ");
 
             String input = scanner.nextLine();
 
             if (input.equals("1")) {
-                showProjectMenu();
+                showDashboard();
             } else if (input.equals("2")) {
-                showTaskMenu();
+                showProjectMenu();
             } else if (input.equals("3")) {
+                showTaskMenu();
+            } else if (input.equals("4")) {
                 showCalendar();
             } else if (input.equals("0")) {
                 running = false;
@@ -52,13 +55,20 @@ public class ConsoleMenu {
         }
     }
 
+    private void showDashboard() {
+        CalendarService calendarService = new CalendarService(taskService, projectService);
+        DashboardService dashboardService = new DashboardService(taskService, projectService);
+        DashboardMenu dashboardMenu = new DashboardMenu(dashboardService, calendarService);
+        dashboardMenu.show();
+    }
+
     private void showProjectMenu() {
-        ProjectMenu projectMenu = new ProjectMenu(projectService);
+        ProjectMenu projectMenu = new ProjectMenu(projectService, taskService);
         projectMenu.show();
     }
 
     private void showTaskMenu() {
-        TaskMenu taskMenu = new TaskMenu(taskService);
+        TaskMenu taskMenu = new TaskMenu(taskService, projectService);
         taskMenu.show();
     }
 

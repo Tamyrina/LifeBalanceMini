@@ -38,16 +38,4 @@ public class ProjectService {
             repository.saveProjects(projectList);
         }
     }
-
-    public int getCompletedTaskCount(int projectIndex) {
-        return 0;
-    }
-
-    public int getTotalTaskCount(int projectIndex) {
-        return 0;
-    }
-
-    public int getProgress(int projectIndex) {
-        return 0;
-    }
 }

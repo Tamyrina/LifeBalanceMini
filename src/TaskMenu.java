@@ -1,11 +1,14 @@
 import java.util.Scanner;
+import java.util.ArrayList;
 
 public class TaskMenu {
     private TaskService taskService;
+    private ProjectService projectService;
     private Scanner scanner;
 
-    public TaskMenu(TaskService taskService) {
+    public TaskMenu(TaskService taskService, ProjectService projectService) {
         this.taskService = taskService;
+        this.projectService = projectService;
         this.scanner = new Scanner(System.in);
     }
 
@@ -58,8 +61,11 @@ public class TaskMenu {
 
         int estimatedDuration = readPositiveInt("Geschätzte Dauer (Minuten): ");
 
-        System.out.print("Projekt: ");
-        String project = scanner.nextLine();
+        String project = selectProject();
+        if (project == null) {
+            System.out.println("Aufgabe wurde nicht erstellt.");
+            return;
+        }
 
         Task task = new Task(title, dueDate, startTime, estimatedDuration, "", project);
         taskService.addTask(task);
@@ -145,12 +151,53 @@ public class TaskMenu {
 
         int newEstimatedDuration = readPositiveInt("Neue geschätzte Dauer (Minuten): ");
 
-        System.out.print("Neues Projekt: ");
-        String newProject = scanner.nextLine();
+        String newProject = selectProject();
+        if (newProject == null) {
+            System.out.println("Aufgabe wurde nicht bearbeitet.");
+            return;
+        }
 
         taskService.updateTask(index, newTitle, newDueDate, newStartTime, newEstimatedDuration, currentTask.getRepeat(), newProject);
 
         System.out.println("Aufgabe " + (index + 1) + " wurde bearbeitet.");
+    }
+
+    private String selectProject() {
+        ArrayList<Project> projects = projectService.getAllProjects();
+        
+        if (projects.isEmpty()) {
+            System.out.println("Es gibt noch keine Projekte. Bitte erstelle zuerst ein Projekt.");
+            return null;
+        }
+
+        System.out.println();
+        System.out.println("Wähle ein Projekt:");
+        for (int i = 0; i < projects.size(); i++) {
+            System.out.println((i + 1) + ". " + projects.get(i).getTitle());
+        }
+        System.out.println("0. Abbrechen");
+        System.out.print("Projektnummer: ");
+
+        while (true) {
+            String input = scanner.nextLine();
+            
+            try {
+                int number = Integer.parseInt(input);
+                if (number == 0) {
+                    return null;
+                }
+                int index = number - 1;
+                if (index < 0 || index >= projects.size()) {
+                    System.out.println("Ungültige Nummer. Bitte erneut versuchen.");
+                    System.out.print("Projektnummer: ");
+                    continue;
+                }
+                return projects.get(index).getTitle();
+            } catch (NumberFormatException e) {
+                System.out.println("Ungültige Eingabe. Bitte erneut versuchen.");
+                System.out.print("Projektnummer: ");
+            }
+        }
     }
 
     private int readTaskIndex(String prompt) {
