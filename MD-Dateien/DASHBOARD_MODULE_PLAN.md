@@ -20,7 +20,7 @@ The Dashboard displays:
 
 - active projects
 - project progress
-- today's scheduled tasks
+- today's scheduled tasks including calculated end times
 - warnings (for example overlapping tasks)
 
 The Dashboard does not:
@@ -48,7 +48,7 @@ Example:
 
 Software Engineering
 
-███████░░░
+███████░░░   7/10
 
 The progress is calculated automatically from completed tasks.
 
@@ -85,17 +85,22 @@ Examples:
 
 Warnings are informational only.
 
+They do not prevent the user from creating or modifying tasks.
+
+The current implementation displays warnings for overlapping tasks.
+
 ---
 
 # Navigation
 
-The Dashboard is the application's start page.
+The Dashboard is shown automatically when the application starts.
 
 From the Dashboard the user can navigate to:
 
 - Projects
 - Tasks
 - Calendar
+- Exit
 
 ---
 
@@ -117,6 +122,10 @@ DashboardService uses:
 - CalendarService
 
 DashboardMenu only displays information and handles navigation.
+
+DashboardService gathers information from the other modules.
+
+It does not calculate or store its own data.
 
 ---
 

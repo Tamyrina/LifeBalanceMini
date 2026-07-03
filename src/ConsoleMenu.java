@@ -5,6 +5,7 @@ public class ConsoleMenu {
     private TaskService taskService;
     private ProjectService projectService;
     private Scanner scanner;
+    private boolean dashboardShown = false;
 
     public ConsoleMenu(TaskService taskService, ProjectService projectService) {
         this.taskService = taskService;
@@ -16,24 +17,31 @@ public class ConsoleMenu {
         boolean running = true;
 
         while (running) {
+            // Dashboard nur beim ersten Start anzeigen
+            if (!dashboardShown) {
+                CalendarService calendarService = new CalendarService(taskService, projectService);
+                DashboardService dashboardService = new DashboardService(taskService, projectService);
+                DashboardMenu dashboardMenu = new DashboardMenu(dashboardService, calendarService);
+                dashboardMenu.show();
+                dashboardShown = true;
+            }
+
+            // Navigationsmenü
             System.out.println();
-            System.out.println("=== LifeBalance Mini ===");
-            System.out.println("1. Dashboard");
-            System.out.println("2. Projekte");
-            System.out.println("3. Aufgaben");
-            System.out.println("4. Kalender");
+            System.out.println("=== Navigation ===");
+            System.out.println("1. Projekte");
+            System.out.println("2. Aufgaben");
+            System.out.println("3. Kalender");
             System.out.println("0. Beenden");
             System.out.print("Auswahl: ");
 
             String input = scanner.nextLine();
 
             if (input.equals("1")) {
-                showDashboard();
-            } else if (input.equals("2")) {
                 showProjectMenu();
-            } else if (input.equals("3")) {
+            } else if (input.equals("2")) {
                 showTaskMenu();
-            } else if (input.equals("4")) {
+            } else if (input.equals("3")) {
                 showCalendar();
             } else if (input.equals("0")) {
                 running = false;
@@ -42,12 +50,6 @@ public class ConsoleMenu {
                 System.out.println("Ungültige Eingabe.");
             }
         }
-    }
-
-    private void showDashboard() {
-        DashboardService dashboardService = new DashboardService(taskService, projectService);
-        DashboardMenu dashboardMenu = new DashboardMenu(dashboardService);
-        dashboardMenu.show();
     }
 
     private void showProjectMenu() {

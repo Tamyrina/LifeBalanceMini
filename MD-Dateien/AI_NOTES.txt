@@ -65,3 +65,169 @@ Here is a detailed review of the current Java codebase against the provided arch
    * Console UI Cleanliness: Reading input and parsing integers via Integer.parseInt(scanner.nextLine()) is simple, but
      it lacks basic error handling if the user inputs a non-numeric string. Adding a lightweight helper method for safe
      integer scanning would prevent crashes while keeping the code accessible to beginners.
+
+
+
+
+
+
+
+  1. Critical Bugs (Application Crashes & File Corruption)
+
+  Issue 1.1: Infinite Recursion leading to StackOverflowError in Calendar Actions
+   * Location: src/CalendarMenu.java (inside moveTask() and changeDuration())
+   * The Code:
+
+   1   if (index < 0 || index >= lastShownTasks.size()) {
+   2       System.out.println("Ungültige Auswahl. Bitte erneut versuchen.");
+   3       moveTask(); // <--- RECURSION
+   4       return;
+   5   }
+   * Why it should be fixed: If a user repeatedly enters invalid inputs (either by selecting an out-of-bounds number or entering a non-numeric string), the application calls the same method recursively. In a standard JVM, each recursive call allocates a new stack frame. This will
+     quickly deplete stack space and throw a StackOverflowError, crash-terminating the entire CLI session.
+   * Solution: Replace recursive self-invocation with a standard, safe iterative loop (while (true)) or return safely to the preceding menu.
+
+  ---
+
+  Issue 1.2: Calendar and Today Display Crash via Time Format Mismatch
+   * Location: src/CalendarMenu.java (calculateEndTime()), src/CalendarService.java (parseTimeToMinutesStatic())
+   * The Code:
+
+   1   private String calculateEndTime(String startTime, int estimatedDuration) {
+   2       String[] parts = startTime.split(":");
+   3       int hour = Integer.parseInt(parts[0]);
+   4       int minute = Integer.parseInt(parts[1]); // <--- ArrayIndexOutOfBoundsException
+   5       ...
+   * Why it should be fixed: There is no format validation when a user creates a Task with a custom startTime (e.g., in TaskMenu.addTask(), startTime is read as a raw String). If a user inputs an invalid time format like "9", "09.00", "none", or leaves it empty, the file saves
+     successfully. However, the moment the user navigates to Calendar (or any dashboard view that shows today's tasks), split(":") returns an array of length 1, causing an ArrayIndexOutOfBoundsException or NumberFormatException. This locks the user out of the calendar permanently
+     until they manually open and fix tasks.txt.
+   * Solution: Validate the time format (e.g., using a regex like ^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$) during input in TaskMenu.java and CalendarMenu.java before allowing persistence.
+
+  ---
+
+  Issue 1.3: Crash on Manual Date Parsing
+   * Location: src/CalendarMenu.java (parseDate())
+   * The Code:
+
+   1   private LocalDate parseDate(String date) {
+   2       String[] parts = date.split("\\.");
+   3       return LocalDate.of(Integer.parseInt(parts[2]), Integer.parseInt(parts[1]), Integer.parseInt(parts[0]));
+   4   }
+   * Why it should be fixed: If a user chooses "Bestimmten Tag anzeigen" and inputs an invalid format (such as "2026-07-03", "abc", or a blank input), date.split("\\.") will fail to produce three parts, resulting in an unhandled ArrayIndexOutOfBoundsException. Furthermore, if the
+     values are non-numeric or represent an invalid date (e.g., "31.02.2026"), Java throws a NumberFormatException or DateTimeException. Because there is no error boundary wrapping this parsing, the application immediately terminates.
+   * Solution: Implement a try-catch block around parseDate() or use a DateTimeFormatter with explicit validation.
+
+  ---
+
+  Issue 1.4: Database Corruption via Semicolon Injection (Delimiter Collision)
+   * Location: src/ProjectRepository.java (saveProjects()), src/TaskRepository.java (saveTasks())
+   * The Code:
+
+   1   String line = project.getTitle() + ";" + project.getCategory() + ";" + ...
+   * Why it should be fixed: Semicolons ; are used as the database field delimiter. If a user enters a semicolon within a text input (such as a project title: "Refactor; Database"), the output saved to the text file will contain extra delimiters. Upon restarting the application:
+     1. ProjectRepository.loadProjects() will split the line into more parts than expected. Since parts.length == 5 fails, the project is permanently lost / skipped on load.
+     2. In TaskRepository.loadTasks(), if extra semicolons shift the field indices, Integer.parseInt(parts[3]) will attempt to parse non-numeric text, throwing a NumberFormatException and halting the loading of all subsequent tasks.
+   * Solution: Either strip semicolons from user input, escape them (e.g., convert ; to \;), or use a standardized serializing helper.
+
+  ---
+
+  2. Functional Problems (Architectural Deviations & Broken Flows)
+
+  Issue 2.1: Unimplemented Project Progress Methods (Architectural Violation)
+   * Location: src/ProjectService.java
+   * The Code:
+
+   1   public int getCompletedTaskCount(int projectIndex) { return 0; }
+   2   public int getTotalTaskCount(int projectIndex) { return 0; }
+   3   public int getProgress(int projectIndex) { return 0; }
+   * Why it should be fixed: ARCHITECTURE.md states: "Project progress is calculated from the tasks assigned to the project. A project should be marked as completed when all assigned tasks are completed."
+    Currently, these methods are stubbed to return 0. ProjectService has no reference to TaskService, making it architecturally impossible for it to load tasks. As a result, the projects screen is fundamentally broken: project progress and automatic completion checks are
+  completely non-functional.
+   * Solution: Pass TaskService as a constructor dependency into ProjectService so it can dynamically query tasks associated with the project's title.
+
+  ---
+
+  Issue 2.2: Orphaned Tasks and Out-of-Sync Projects on Title Modification/Deletion
+   * Location: src/ProjectService.java (updateProject(), removeProject())
+   * Why it should be fixed: Tasks reference projects by a raw String project title. If a user renames a project, all tasks assigned to the old project title are orphaned—they will no longer associate with the modified project, breaking progress tracking on the Dashboard.
+     Similarly, if a project is deleted, the associated tasks remain in tasks.txt referencing a non-existent project.
+   * Solution: When a project's title is modified or deleted in ProjectService, propagate the updates/deletions cascadingly to the TaskService to update or remove matching task references.
+
+  ---
+
+  Issue 2.3: Task Omission of Start Time and Duration in CLI Output
+   * Location: src/Task.java (toString())
+   * The Code:
+
+   1   @Override
+   2   public String toString() {
+   3       return "Titel: " + title + "\nDatum: " + dueDate + "\nWiederholung: " + repeat + ...
+   4   }
+   * Why it should be fixed: Although Task possesses startTime and estimatedDuration attributes, they are completely omitted in the toString() method. When users select "Aufgaben anzeigen" from the menu, they cannot view when a task is scheduled or how long it takes.
+   * Solution: Include startTime and estimatedDuration within the Task.toString() representation.
+
+  ---
+
+  Issue 2.4: Falsified Operation Feedback on Out-of-Bounds Index
+   * Location: src/ProjectMenu.java (deleteProject(), editProject()), src/TaskMenu.java
+   * The Code:
+
+   1   int index = number - 1;
+   2   projectService.removeProject(index);
+   3   System.out.println("Projekt " + number + " wurde gelöscht.");
+   * Why it should be fixed: If the user enters a valid number format but the number is out of bounds (e.g., 99 when only 2 items exist), projectService.removeProject(index) safely ignores the call because of its internal bounds-checking. However, the UI still falsely outputs
+     "Projekt 99 wurde gelöscht." to the user, creating a highly misleading user experience.
+   * Solution: Ensure the service methods return a boolean indicating success, or perform the bounds check in the Menu layer before displaying confirmation.
+
+  ---
+
+  3. Robustness Improvements (Security & Input Handling)
+
+  Issue 3.1: Nested Action Menu Navigation Loop (Call Stack Accumulation)
+   * Location: src/CalendarMenu.java (showActionMenu() -> navigatePrevious() / navigateNext())
+   * Why it should be fixed:
+     1. showToday() calls showActionMenu().
+     2. If the user chooses navigation option 1 or 2, navigatePrevious() is invoked, which calls showDayWithCurrentDate().
+     3. showDayWithCurrentDate() calls showActionMenu() again.
+    This creates a nested call stack. If a user navigates through 15 days in a row, there are 15 suspended layers of showActionMenu() on the Java execution stack. If the user wants to return to the main calendar menu, they must type 0 (Exit) 15 separate times to wind back through
+  each nested level.
+   * Solution: Decouple the navigation display from the action menu. Control the current date and view mode within a loop inside a single menu activation, rather than pushing new menu methods onto the stack.
+
+  ---
+
+  Issue 3.2: General Program Vulnerability to non-numeric input (NumberFormatException)
+   * Location: src/ProjectMenu.java (deleteProject(), editProject()), src/TaskMenu.java (addTask(), deleteTask(), completeTask(), editTask())
+   * The Code:
+
+   1   int number = Integer.parseInt(scanner.nextLine());
+   * Why it should be fixed: Typing any alphabetical characters, symbols, or even a blank line on any menu item deletion/editing prompt immediately throws a NumberFormatException and crashes the application.
+   * Solution: Create a helper method in ConsoleMenu (e.g., readIntSafe()) that wraps Integer.parseInt in a try-catch block and prompts the user to re-enter a valid number upon failure.
+
+  ---
+
+  Issue 3.3: Multiple Scanner Instances Wrapping System.in
+   * Location: Multiple menu classes (ConsoleMenu.java, ProjectMenu.java, TaskMenu.java, CalendarMenu.java, DashboardMenu.java)
+   * The Code:
+   1   this.scanner = new Scanner(System.in);
+   * Why it should be fixed: Instantiating multiple Scanner instances over System.in throughout an application can lead to input buffering issues. If any menu closing logic were to call scanner.close(), it would shut down the underlying System.in stream entirely, rendering the
+     console permanently unreadable for the remainder of the application runtime.
+   * Solution: Instantiate Scanner once in Main.java and pass it down as a dependency to each menu constructor, or use a shared console utility.
+
+  ---
+
+  4. Optional Refinements (Duplication & Maintenance)
+
+  Issue 4.1: Direct Redundancy in Date Retrieval Logic
+   * Location: src/CalendarService.java (getTasksForToday()), src/DashboardService.java (getTodaysTasks()), src/CalendarMenu.java (formatDate())
+   * Why it should be fixed: The logic to format the current date string dd.MM.yyyy and search for tasks scheduled on that day is duplicated across both services and menus.
+   * Solution: Refactor the date-matching logic to a single helper method. For instance, CalendarService.getTasksForToday() can be simplified to:
+
+   1   public ArrayList<Task> getTasksForToday() {
+   2       return getTasksForDate(formatDate(LocalDate.now()));
+   3   }
+
+  Issue 4.2: Lack of Project Existence Validation
+   * Location: src/TaskMenu.java (addTask(), editTask())
+   * Why it should be fixed: When a user assigns a task to a project, there is no verification that the project actually exists in the database. A user can write "Secret Project X" and assign tasks to it, but this project will never appear in the Projects view or have progress
+     calculated, leading to detached tasks.
+   * Solution: Verify the project title input against ProjectService.getAllProjects() and warn or reject the input if the project does not exist.

@@ -12,7 +12,7 @@ public class Task {
 private String project;
     private String startTime;
     private int estimatedDuration;
-
+    
     public Task(String title, String dueDate, String startTime, int estimatedDuration, String repeat, String project) {
         this.title = title;
         this.dueDate = dueDate;
@@ -81,12 +81,10 @@ private String project;
         this.completed = completed;
     }
 
-    // Ausgabe einer Aufgabe
     @Override
     public String toString() {
         return "Titel: " + title +
                 "\nDatum: " + dueDate +
-                "\nWiederholung: " + repeat +
                 "\nProjekt: " + project +
                 "\nErledigt: " + completed;
 

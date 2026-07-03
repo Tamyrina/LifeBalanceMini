@@ -1,6 +1,6 @@
 # Calendar Module
 
-Last updated: 03.07.2026
+Last updated: 04.07.2026
 
 ## Purpose
 
@@ -27,6 +27,7 @@ The Calendar module can:
 - detect overlapping tasks
 - move a task to another date or time
 - change the estimated duration of a task
+- validate user input before applying changes
 
 The Calendar module does not:
 
@@ -127,9 +128,13 @@ Overlaps are warnings only.
 
 The user may still keep the schedule.
 
+Only tasks scheduled on the same date are checked for overlaps.
+
+Tasks on different dates are never considered overlapping.
+
 ---
 
-## Calendar Menu
+# Calendar Menu
 
 The Calendar menu should offer:
 
@@ -137,23 +142,40 @@ The Calendar menu should offer:
 1. Show today
 2. Show specific day
 3. Show current week
-
 0. Back
 ```
 
-The exact menu can be adjusted if needed, but it should stay simple.
+The main menu intentionally remains simple.
 
-After displaying a day or week view, the user can open a small action menu.
+After displaying a day or week view, a context-specific action menu is shown.
 
 The action menu offers:
+
+```text
 1. Previous day/week
 2. Next day/week
 3. Move task
-4. Change task Duration
-
+4. Change task duration
 0. Back to calendar menu
+```
 
-This keeps the main calendar menu simple and places editing actions where the user can actually see the scheduled tasks.
+Editing actions are available only after displaying tasks, allowing the user to first inspect the schedule before making changes.
+
+---
+## Input Validation
+
+All user input is validated before changes are applied.
+
+The Calendar module validates:
+
+- menu selections
+- dates (DD.MM.YYYY)
+- times (HH:MM)
+- estimated duration (positive integer)
+
+Invalid input does not terminate the application.
+
+Instead, the user is informed and asked to enter the value again.
 ---
 
 ## Architecture
@@ -182,3 +204,5 @@ It is not intended to replace Google Calendar or Outlook.
 Its purpose is to provide a clear overview of tasks inside LifeBalance Mini.
 
 The implementation should remain easy to understand.
+
+The focus is on clarity, robustness and ease of use rather than implementing every possible calendar feature.

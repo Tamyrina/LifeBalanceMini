@@ -61,23 +61,23 @@ public class CalendarMenu {
     }
 
     private void showDay() {
-        System.out.print("Datum (TT.MM.JJJJ): ");
-        String date = scanner.nextLine();
-        
-        if (!isValidDate(date)) {
+        while (true) {
+            System.out.print("Datum (TT.MM.JJJJ): ");
+            String date = scanner.nextLine();
+            
+            if (isValidDate(date)) {
+                System.out.println();
+                System.out.println("=== Tag ===");
+                viewMode = "DAY";
+                currentDate = parseDate(date);
+                lastShownTasks = calendarService.getTasksForDate(date);
+                displayTasks(lastShownTasks);
+                showOverlapWarnings(lastShownTasks);
+                showActionMenu();
+                return;
+            }
             System.out.println("Ungültiges Datum. Bitte im Format TT.MM.JJJJ eingeben.");
-            showDay();
-            return;
         }
-        
-        System.out.println();
-        System.out.println("=== Tag ===");
-        viewMode = "DAY";
-        currentDate = parseDate(date);
-        lastShownTasks = calendarService.getTasksForDate(date);
-        displayTasks(lastShownTasks);
-        showOverlapWarnings(lastShownTasks);
-        showActionMenu();
     }
 
     private void showWeek() {
@@ -178,41 +178,41 @@ public class CalendarMenu {
         }
         System.out.println("0. Zurück");
         
-        System.out.print("Welche Aufgabe verschieben? Nummer: ");
-        String input = scanner.nextLine();
-        
-        if (input.equals("0")) {
-            return;
-        }
-        
-        try {
-            int number = Integer.parseInt(input);
-            int index = number - 1;
+        while (true) {
+            System.out.print("Welche Aufgabe verschieben? Nummer: ");
+            String input = scanner.nextLine();
             
-            if (index < 0 || index >= lastShownTasks.size()) {
-                System.out.println("Ungültige Auswahl. Bitte erneut versuchen.");
-                moveTask();
+            if (input.equals("0")) {
                 return;
             }
             
-            Task taskToMove = lastShownTasks.get(index);
-            int taskListIndex = calendarService.getAllTasks().indexOf(taskToMove);
-            
-            String newDueDate = readValidDate("Neues Datum (TT.MM.JJJJ): ");
-            
-            String newStartTime = readValidTime("Neue Startzeit (HH:MM): ");
-            
-            calendarService.moveTask(taskListIndex, newDueDate, newStartTime);
-            System.out.println("Aufgabe verschoben.");
-            
-            if (viewMode.equals("DAY")) {
-                showDayWithCurrentDate();
-            } else {
-                showWeek();
+            try {
+                int number = Integer.parseInt(input);
+                int index = number - 1;
+                
+                if (index < 0 || index >= lastShownTasks.size()) {
+                    System.out.println("Ungültige Auswahl. Bitte erneut versuchen.");
+                    continue;
+                }
+                
+                Task taskToMove = lastShownTasks.get(index);
+                int taskListIndex = calendarService.getAllTasks().indexOf(taskToMove);
+                
+                String newDueDate = readValidDate("Neues Datum (TT.MM.JJJJ): ");
+                String newStartTime = readValidTime("Neue Startzeit (HH:MM): ");
+                
+                calendarService.moveTask(taskListIndex, newDueDate, newStartTime);
+                System.out.println("Aufgabe verschoben.");
+                
+                if (viewMode.equals("DAY")) {
+                    showDayWithCurrentDate();
+                } else {
+                    showWeek();
+                }
+                return;
+            } catch (NumberFormatException e) {
+                System.out.println("Ungültige Eingabe. Bitte erneut versuchen.");
             }
-        } catch (NumberFormatException e) {
-            System.out.println("Ungültige Eingabe. Bitte erneut versuchen.");
-            moveTask();
         }
     }
 
@@ -231,39 +231,40 @@ public class CalendarMenu {
         }
         System.out.println("0. Zurück");
         
-        System.out.print("Welche Aufgabe ändern? Nummer: ");
-        String input = scanner.nextLine();
-        
-        if (input.equals("0")) {
-            return;
-        }
-        
-        try {
-            int number = Integer.parseInt(input);
-            int index = number - 1;
+        while (true) {
+            System.out.print("Welche Aufgabe ändern? Nummer: ");
+            String input = scanner.nextLine();
             
-            if (index < 0 || index >= lastShownTasks.size()) {
-                System.out.println("Ungültige Auswahl. Bitte erneut versuchen.");
-                changeDuration();
+            if (input.equals("0")) {
                 return;
             }
             
-            Task taskToChange = lastShownTasks.get(index);
-            int taskListIndex = calendarService.getAllTasks().indexOf(taskToChange);
-            
-            int newDuration = readPositiveInt("Neue Dauer (Minuten): ");
-            
-            calendarService.changeDuration(taskListIndex, newDuration);
-            System.out.println("Dauer geändert.");
-            
-            if (viewMode.equals("DAY")) {
-                showDayWithCurrentDate();
-            } else {
-                showWeek();
+            try {
+                int number = Integer.parseInt(input);
+                int index = number - 1;
+                
+                if (index < 0 || index >= lastShownTasks.size()) {
+                    System.out.println("Ungültige Auswahl. Bitte erneut versuchen.");
+                    continue;
+                }
+                
+                Task taskToChange = lastShownTasks.get(index);
+                int taskListIndex = calendarService.getAllTasks().indexOf(taskToChange);
+                
+                int newDuration = readPositiveInt("Neue Dauer (Minuten): ");
+                
+                calendarService.changeDuration(taskListIndex, newDuration);
+                System.out.println("Dauer geändert.");
+                
+                if (viewMode.equals("DAY")) {
+                    showDayWithCurrentDate();
+                } else {
+                    showWeek();
+                }
+                return;
+            } catch (NumberFormatException e) {
+                System.out.println("Ungültige Eingabe. Bitte erneut versuchen.");
             }
-        } catch (NumberFormatException e) {
-            System.out.println("Ungültige Eingabe. Bitte erneut versuchen.");
-            changeDuration();
         }
     }
 
@@ -271,7 +272,13 @@ public class CalendarMenu {
         if (tasks.isEmpty()) {
             System.out.println("Keine Aufgaben geplant.");
         } else {
-            for (Task task : tasks) {
+            ArrayList<Task> sortedTasks = new ArrayList<>(tasks);
+            sortedTasks.sort((t1, t2) -> {
+                int time1 = parseTimeToMinutes(t1.getStartTime());
+                int time2 = parseTimeToMinutes(t2.getStartTime());
+                return Integer.compare(time1, time2);
+            });
+            for (Task task : sortedTasks) {
                 String endTime = calculateEndTime(task.getStartTime(), task.getEstimatedDuration());
                 System.out.println(task.getStartTime() + " - " + endTime + "   " + task.getTitle() + " (" + task.getProject() + ")");
             }
@@ -341,23 +348,25 @@ public class CalendarMenu {
     }
 
     private String readValidDate(String prompt) {
-        System.out.print(prompt);
-        String date = scanner.nextLine();
-        if (isValidDate(date)) {
-            return date;
+        while (true) {
+            System.out.print(prompt);
+            String date = scanner.nextLine();
+            if (isValidDate(date)) {
+                return date;
+            }
+            System.out.println("Ungültiges Format. Bitte im Format TT.MM.JJJJ eingeben.");
         }
-        System.out.println("Ungültiges Format. Bitte im Format TT.MM.JJJJ eingeben.");
-        return readValidDate(prompt);
     }
 
     private String readValidTime(String prompt) {
-        System.out.print(prompt);
-        String time = scanner.nextLine();
-        if (isValidTime(time)) {
-            return time;
+        while (true) {
+            System.out.print(prompt);
+            String time = scanner.nextLine();
+            if (isValidTime(time)) {
+                return time;
+            }
+            System.out.println("Ungültiges Format. Bitte im Format HH:MM eingeben.");
         }
-        System.out.println("Ungültiges Format. Bitte im Format HH:MM eingeben.");
-        return readValidTime(prompt);
     }
 
     private int readPositiveInt(String prompt) {
@@ -373,5 +382,10 @@ public class CalendarMenu {
             }
             System.out.println("Ungültige Eingabe. Bitte eine positive Zahl eingeben.");
         }
+    }
+
+    private int parseTimeToMinutes(String time) {
+        String[] parts = time.split(":");
+        return Integer.parseInt(parts[0]) * 60 + Integer.parseInt(parts[1]);
     }
 }

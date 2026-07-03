@@ -61,10 +61,7 @@ public class TaskMenu {
         System.out.print("Projekt: ");
         String project = scanner.nextLine();
 
-        System.out.print("Wiederholung: ");
-        String repeat = scanner.nextLine();
-
-        Task task = new Task(title, dueDate, startTime, estimatedDuration, repeat, project);
+        Task task = new Task(title, dueDate, startTime, estimatedDuration, "", project);
         taskService.addTask(task);
 
         System.out.println("Aufgabe wurde hinzugefügt.");
@@ -135,6 +132,8 @@ public class TaskMenu {
         int index = readTaskIndex("Welche Aufgabe soll bearbeitet werden? Nummer eingeben (0 für zurück): ");
         if (index < 0) return;
 
+        Task currentTask = taskService.getAllTasks().get(index);
+
         System.out.print("Neuer Titel: ");
         String newTitle = scanner.nextLine();
 
@@ -149,42 +148,42 @@ public class TaskMenu {
         System.out.print("Neues Projekt: ");
         String newProject = scanner.nextLine();
 
-        System.out.print("Neue Wiederholung: ");
-        String newRepeat = scanner.nextLine();
-
-        taskService.updateTask(index, newTitle, newDueDate, newStartTime, newEstimatedDuration, newRepeat, newProject);
+        taskService.updateTask(index, newTitle, newDueDate, newStartTime, newEstimatedDuration, currentTask.getRepeat(), newProject);
 
         System.out.println("Aufgabe " + (index + 1) + " wurde bearbeitet.");
     }
 
     private int readTaskIndex(String prompt) {
-        System.out.print(prompt);
-        String input = scanner.nextLine();
-        
-        try {
-            int number = Integer.parseInt(input);
-            if (number == 0) {
-                return -1;
+        while (true) {
+            System.out.print(prompt);
+            String input = scanner.nextLine();
+            
+            try {
+                int number = Integer.parseInt(input);
+                if (number == 0) {
+                    return -1;
+                }
+                int index = number - 1;
+                if (index < 0 || index >= taskService.getAllTasks().size()) {
+                    System.out.println("Ungültige Nummer. Bitte erneut versuchen.");
+                    continue;
+                }
+                return index;
+            } catch (NumberFormatException e) {
+                System.out.println("Ungültige Eingabe. Bitte erneut versuchen.");
             }
-            int index = number - 1;
-            if (index < 0 || index >= taskService.getAllTasks().size()) {
-                System.out.println("Ungültige Nummer. Bitte erneut versuchen.");
-                return readTaskIndex(prompt);
-            }
-            return index;
-        } catch (NumberFormatException e) {
-            System.out.println("Ungültige Eingabe. Bitte erneut versuchen.");
-            return readTaskIndex(prompt);
         }
     }
 
     private String readValidDate() {
-        String date = scanner.nextLine();
-        if (isValidDate(date)) {
-            return date;
+        while (true) {
+            String date = scanner.nextLine();
+            if (isValidDate(date)) {
+                return date;
+            }
+            System.out.println("Ungültiges Format. Bitte im Format TT.MM.JJJJ eingeben.");
+            System.out.print("Fälligkeitsdatum (TT.MM.JJJJ): ");
         }
-        System.out.println("Ungültiges Format. Bitte im Format TT.MM.JJJJ eingeben.");
-        return readValidDate();
     }
 
     private boolean isValidDate(String date) {
@@ -202,12 +201,14 @@ public class TaskMenu {
     }
 
     private String readValidTime() {
-        String time = scanner.nextLine();
-        if (isValidTime(time)) {
-            return time;
+        while (true) {
+            String time = scanner.nextLine();
+            if (isValidTime(time)) {
+                return time;
+            }
+            System.out.println("Ungültiges Format. Bitte im Format HH:MM eingeben.");
+            System.out.print("Startzeit (HH:MM): ");
         }
-        System.out.println("Ungültiges Format. Bitte im Format HH:MM eingeben.");
-        return readValidTime();
     }
 
     private boolean isValidTime(String time) {
