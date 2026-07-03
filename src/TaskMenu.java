@@ -50,14 +50,13 @@ public class TaskMenu {
         System.out.print("Titel: ");
         String title = scanner.nextLine();
 
-        System.out.print("Fälligkeitsdatum: ");
-        String dueDate = scanner.nextLine();
+        System.out.print("Fälligkeitsdatum (TT.MM.JJJJ): ");
+        String dueDate = readValidDate();
 
-        System.out.print("Startzeit: ");
-        String startTime = scanner.nextLine();
+        System.out.print("Startzeit (HH:MM): ");
+        String startTime = readValidTime();
 
-        System.out.print("Geschätzte Dauer (Minuten): ");
-        int estimatedDuration = Integer.parseInt(scanner.nextLine());
+        int estimatedDuration = readPositiveInt("Geschätzte Dauer (Minuten): ");
 
         System.out.print("Projekt: ");
         String project = scanner.nextLine();
@@ -97,13 +96,11 @@ public class TaskMenu {
 
         showTasks();
 
-        System.out.print("Welche Aufgabe soll gelöscht werden? Nummer eingeben: ");
-        int number = Integer.parseInt(scanner.nextLine());
+        int index = readTaskIndex("Welche Aufgabe soll gelöscht werden? Nummer eingeben (0 für zurück): ");
+        if (index < 0) return;
 
-        int index = number - 1;
         taskService.removeTask(index);
-
-        System.out.println("Aufgabe " + number + " wurde gelöscht.");
+        System.out.println("Aufgabe " + (index + 1) + " wurde gelöscht.");
     }
 
     private void completeTask() {
@@ -117,13 +114,11 @@ public class TaskMenu {
 
         showTasks();
 
-        System.out.print("Welche Aufgabe wurde erledigt? Nummer eingeben: ");
-        int number = Integer.parseInt(scanner.nextLine());
+        int index = readTaskIndex("Welche Aufgabe wurde erledigt? Nummer eingeben (0 für zurück): ");
+        if (index < 0) return;
 
-        int index = number - 1;
         taskService.markTaskAsCompleted(index);
-
-        System.out.println("Aufgabe " + number + " wurde als erledigt markiert.");
+        System.out.println("Aufgabe " + (index + 1) + " wurde als erledigt markiert.");
     }
 
     private void editTask() {
@@ -137,20 +132,19 @@ public class TaskMenu {
 
         showTasks();
 
-        System.out.print("Welche Aufgabe soll bearbeitet werden? Nummer eingeben: ");
-        int number = Integer.parseInt(scanner.nextLine());
+        int index = readTaskIndex("Welche Aufgabe soll bearbeitet werden? Nummer eingeben (0 für zurück): ");
+        if (index < 0) return;
 
         System.out.print("Neuer Titel: ");
         String newTitle = scanner.nextLine();
 
-        System.out.print("Neues Fälligkeitsdatum: ");
-        String newDueDate = scanner.nextLine();
+        System.out.print("Neues Fälligkeitsdatum (TT.MM.JJJJ): ");
+        String newDueDate = readValidDate();
 
-        System.out.print("Neue Startzeit: ");
-        String newStartTime = scanner.nextLine();
+        System.out.print("Neue Startzeit (HH:MM): ");
+        String newStartTime = readValidTime();
 
-        System.out.print("Neue geschätzte Dauer (Minuten): ");
-        int newEstimatedDuration = Integer.parseInt(scanner.nextLine());
+        int newEstimatedDuration = readPositiveInt("Neue geschätzte Dauer (Minuten): ");
 
         System.out.print("Neues Projekt: ");
         String newProject = scanner.nextLine();
@@ -158,9 +152,89 @@ public class TaskMenu {
         System.out.print("Neue Wiederholung: ");
         String newRepeat = scanner.nextLine();
 
-        int index = number - 1;
         taskService.updateTask(index, newTitle, newDueDate, newStartTime, newEstimatedDuration, newRepeat, newProject);
 
-        System.out.println("Aufgabe " + number + " wurde bearbeitet.");
+        System.out.println("Aufgabe " + (index + 1) + " wurde bearbeitet.");
+    }
+
+    private int readTaskIndex(String prompt) {
+        System.out.print(prompt);
+        String input = scanner.nextLine();
+        
+        try {
+            int number = Integer.parseInt(input);
+            if (number == 0) {
+                return -1;
+            }
+            int index = number - 1;
+            if (index < 0 || index >= taskService.getAllTasks().size()) {
+                System.out.println("Ungültige Nummer. Bitte erneut versuchen.");
+                return readTaskIndex(prompt);
+            }
+            return index;
+        } catch (NumberFormatException e) {
+            System.out.println("Ungültige Eingabe. Bitte erneut versuchen.");
+            return readTaskIndex(prompt);
+        }
+    }
+
+    private String readValidDate() {
+        String date = scanner.nextLine();
+        if (isValidDate(date)) {
+            return date;
+        }
+        System.out.println("Ungültiges Format. Bitte im Format TT.MM.JJJJ eingeben.");
+        return readValidDate();
+    }
+
+    private boolean isValidDate(String date) {
+        if (date == null || date.isEmpty()) return false;
+        String[] parts = date.split("\\.");
+        if (parts.length != 3) return false;
+        try {
+            int day = Integer.parseInt(parts[0]);
+            int month = Integer.parseInt(parts[1]);
+            int year = Integer.parseInt(parts[2]);
+            return day >= 1 && day <= 31 && month >= 1 && month <= 12 && year >= 1900 && year <= 2100;
+        } catch (NumberFormatException e) {
+            return false;
+        }
+    }
+
+    private String readValidTime() {
+        String time = scanner.nextLine();
+        if (isValidTime(time)) {
+            return time;
+        }
+        System.out.println("Ungültiges Format. Bitte im Format HH:MM eingeben.");
+        return readValidTime();
+    }
+
+    private boolean isValidTime(String time) {
+        if (time == null || time.isEmpty()) return false;
+        String[] parts = time.split(":");
+        if (parts.length != 2) return false;
+        try {
+            int hour = Integer.parseInt(parts[0]);
+            int minute = Integer.parseInt(parts[1]);
+            return hour >= 0 && hour <= 23 && minute >= 0 && minute <= 59;
+        } catch (NumberFormatException e) {
+            return false;
+        }
+    }
+
+    private int readPositiveInt(String prompt) {
+        while (true) {
+            System.out.print(prompt);
+            String input = scanner.nextLine();
+            try {
+                int value = Integer.parseInt(input);
+                if (value > 0) {
+                    return value;
+                }
+            } catch (NumberFormatException e) {
+            }
+            System.out.println("Ungültige Eingabe. Bitte eine positive Zahl eingeben.");
+        }
     }
 }

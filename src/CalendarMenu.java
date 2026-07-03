@@ -63,6 +63,13 @@ public class CalendarMenu {
     private void showDay() {
         System.out.print("Datum (TT.MM.JJJJ): ");
         String date = scanner.nextLine();
+        
+        if (!isValidDate(date)) {
+            System.out.println("Ungültiges Datum. Bitte im Format TT.MM.JJJJ eingeben.");
+            showDay();
+            return;
+        }
+        
         System.out.println();
         System.out.println("=== Tag ===");
         viewMode = "DAY";
@@ -191,11 +198,9 @@ public class CalendarMenu {
             Task taskToMove = lastShownTasks.get(index);
             int taskListIndex = calendarService.getAllTasks().indexOf(taskToMove);
             
-            System.out.print("Neues Datum (TT.MM.JJJJ): ");
-            String newDueDate = scanner.nextLine();
+            String newDueDate = readValidDate("Neues Datum (TT.MM.JJJJ): ");
             
-            System.out.print("Neue Startzeit (HH:MM): ");
-            String newStartTime = scanner.nextLine();
+            String newStartTime = readValidTime("Neue Startzeit (HH:MM): ");
             
             calendarService.moveTask(taskListIndex, newDueDate, newStartTime);
             System.out.println("Aufgabe verschoben.");
@@ -246,8 +251,7 @@ public class CalendarMenu {
             Task taskToChange = lastShownTasks.get(index);
             int taskListIndex = calendarService.getAllTasks().indexOf(taskToChange);
             
-            System.out.print("Neue Dauer (Minuten): ");
-            int newDuration = Integer.parseInt(scanner.nextLine());
+            int newDuration = readPositiveInt("Neue Dauer (Minuten): ");
             
             calendarService.changeDuration(taskListIndex, newDuration);
             System.out.println("Dauer geändert.");
@@ -278,7 +282,7 @@ public class CalendarMenu {
         ArrayList<String> warnings = calendarService.detectOverlaps(tasks);
         if (!warnings.isEmpty()) {
             System.out.println();
-            System.out.println("⚠ Hinweis:");
+            System.out.println("Hinweis:");
             for (String warning : warnings) {
                 System.out.println(warning);
             }
@@ -307,5 +311,67 @@ public class CalendarMenu {
     private LocalDate parseDate(String date) {
         String[] parts = date.split("\\.");
         return LocalDate.of(Integer.parseInt(parts[2]), Integer.parseInt(parts[1]), Integer.parseInt(parts[0]));
+    }
+
+    private boolean isValidDate(String date) {
+        if (date == null || date.isEmpty()) return false;
+        String[] parts = date.split("\\.");
+        if (parts.length != 3) return false;
+        try {
+            int day = Integer.parseInt(parts[0]);
+            int month = Integer.parseInt(parts[1]);
+            int year = Integer.parseInt(parts[2]);
+            return day >= 1 && day <= 31 && month >= 1 && month <= 12 && year >= 1900 && year <= 2100;
+        } catch (NumberFormatException e) {
+            return false;
+        }
+    }
+
+    private boolean isValidTime(String time) {
+        if (time == null || time.isEmpty()) return false;
+        String[] parts = time.split(":");
+        if (parts.length != 2) return false;
+        try {
+            int hour = Integer.parseInt(parts[0]);
+            int minute = Integer.parseInt(parts[1]);
+            return hour >= 0 && hour <= 23 && minute >= 0 && minute <= 59;
+        } catch (NumberFormatException e) {
+            return false;
+        }
+    }
+
+    private String readValidDate(String prompt) {
+        System.out.print(prompt);
+        String date = scanner.nextLine();
+        if (isValidDate(date)) {
+            return date;
+        }
+        System.out.println("Ungültiges Format. Bitte im Format TT.MM.JJJJ eingeben.");
+        return readValidDate(prompt);
+    }
+
+    private String readValidTime(String prompt) {
+        System.out.print(prompt);
+        String time = scanner.nextLine();
+        if (isValidTime(time)) {
+            return time;
+        }
+        System.out.println("Ungültiges Format. Bitte im Format HH:MM eingeben.");
+        return readValidTime(prompt);
+    }
+
+    private int readPositiveInt(String prompt) {
+        while (true) {
+            System.out.print(prompt);
+            String input = scanner.nextLine();
+            try {
+                int value = Integer.parseInt(input);
+                if (value > 0) {
+                    return value;
+                }
+            } catch (NumberFormatException e) {
+            }
+            System.out.println("Ungültige Eingabe. Bitte eine positive Zahl eingeben.");
+        }
     }
 }
