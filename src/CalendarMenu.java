@@ -56,6 +56,7 @@ public class CalendarMenu {
         String todayString = formatDate(LocalDate.now());
         lastShownTasks = calendarService.getTasksForDate(todayString);
         displayTasks(lastShownTasks);
+        showOverlapWarnings(lastShownTasks);
         showActionMenu();
     }
 
@@ -68,6 +69,7 @@ public class CalendarMenu {
         currentDate = parseDate(date);
         lastShownTasks = calendarService.getTasksForDate(date);
         displayTasks(lastShownTasks);
+        showOverlapWarnings(lastShownTasks);
         showActionMenu();
     }
 
@@ -84,6 +86,7 @@ public class CalendarMenu {
             displayTasks(dayTasks);
             lastShownTasks.addAll(dayTasks);
         }
+        showOverlapWarnings(lastShownTasks);
         showActionMenu();
     }
 
@@ -149,6 +152,7 @@ public class CalendarMenu {
         System.out.println("=== Tag ===");
         lastShownTasks = calendarService.getTasksForDate(dateString);
         displayTasks(lastShownTasks);
+        showOverlapWarnings(lastShownTasks);
         showActionMenu();
     }
 
@@ -165,27 +169,45 @@ public class CalendarMenu {
             Task t = lastShownTasks.get(i);
             System.out.println((i + 1) + ". " + t.getTitle() + " (" + t.getDueDate() + ")");
         }
+        System.out.println("0. Zurück");
         
         System.out.print("Welche Aufgabe verschieben? Nummer: ");
-        int number = Integer.parseInt(scanner.nextLine());
-        int index = number - 1;
+        String input = scanner.nextLine();
         
-        Task taskToMove = lastShownTasks.get(index);
-        int taskListIndex = calendarService.getAllTasks().indexOf(taskToMove);
+        if (input.equals("0")) {
+            return;
+        }
         
-        System.out.print("Neues Datum (TT.MM.JJJJ): ");
-        String newDueDate = scanner.nextLine();
-        
-        System.out.print("Neue Startzeit (HH:MM): ");
-        String newStartTime = scanner.nextLine();
-        
-        calendarService.moveTask(taskListIndex, newDueDate, newStartTime);
-        System.out.println("Aufgabe verschoben.");
-        
-        if (viewMode.equals("DAY")) {
-            showDayWithCurrentDate();
-        } else {
-            showWeek();
+        try {
+            int number = Integer.parseInt(input);
+            int index = number - 1;
+            
+            if (index < 0 || index >= lastShownTasks.size()) {
+                System.out.println("Ungültige Auswahl. Bitte erneut versuchen.");
+                moveTask();
+                return;
+            }
+            
+            Task taskToMove = lastShownTasks.get(index);
+            int taskListIndex = calendarService.getAllTasks().indexOf(taskToMove);
+            
+            System.out.print("Neues Datum (TT.MM.JJJJ): ");
+            String newDueDate = scanner.nextLine();
+            
+            System.out.print("Neue Startzeit (HH:MM): ");
+            String newStartTime = scanner.nextLine();
+            
+            calendarService.moveTask(taskListIndex, newDueDate, newStartTime);
+            System.out.println("Aufgabe verschoben.");
+            
+            if (viewMode.equals("DAY")) {
+                showDayWithCurrentDate();
+            } else {
+                showWeek();
+            }
+        } catch (NumberFormatException e) {
+            System.out.println("Ungültige Eingabe. Bitte erneut versuchen.");
+            moveTask();
         }
     }
 
@@ -202,24 +224,42 @@ public class CalendarMenu {
             Task t = lastShownTasks.get(i);
             System.out.println((i + 1) + ". " + t.getTitle() + " (Dauer: " + t.getEstimatedDuration() + " min)");
         }
+        System.out.println("0. Zurück");
         
         System.out.print("Welche Aufgabe ändern? Nummer: ");
-        int number = Integer.parseInt(scanner.nextLine());
-        int index = number - 1;
+        String input = scanner.nextLine();
         
-        Task taskToChange = lastShownTasks.get(index);
-        int taskListIndex = calendarService.getAllTasks().indexOf(taskToChange);
+        if (input.equals("0")) {
+            return;
+        }
         
-        System.out.print("Neue Dauer (Minuten): ");
-        int newDuration = Integer.parseInt(scanner.nextLine());
-        
-        calendarService.changeDuration(taskListIndex, newDuration);
-        System.out.println("Dauer geändert.");
-        
-        if (viewMode.equals("DAY")) {
-            showDayWithCurrentDate();
-        } else {
-            showWeek();
+        try {
+            int number = Integer.parseInt(input);
+            int index = number - 1;
+            
+            if (index < 0 || index >= lastShownTasks.size()) {
+                System.out.println("Ungültige Auswahl. Bitte erneut versuchen.");
+                changeDuration();
+                return;
+            }
+            
+            Task taskToChange = lastShownTasks.get(index);
+            int taskListIndex = calendarService.getAllTasks().indexOf(taskToChange);
+            
+            System.out.print("Neue Dauer (Minuten): ");
+            int newDuration = Integer.parseInt(scanner.nextLine());
+            
+            calendarService.changeDuration(taskListIndex, newDuration);
+            System.out.println("Dauer geändert.");
+            
+            if (viewMode.equals("DAY")) {
+                showDayWithCurrentDate();
+            } else {
+                showWeek();
+            }
+        } catch (NumberFormatException e) {
+            System.out.println("Ungültige Eingabe. Bitte erneut versuchen.");
+            changeDuration();
         }
     }
 
@@ -230,6 +270,17 @@ public class CalendarMenu {
             for (Task task : tasks) {
                 String endTime = calculateEndTime(task.getStartTime(), task.getEstimatedDuration());
                 System.out.println(task.getStartTime() + " - " + endTime + "   " + task.getTitle() + " (" + task.getProject() + ")");
+            }
+        }
+    }
+
+    private void showOverlapWarnings(ArrayList<Task> tasks) {
+        ArrayList<String> warnings = calendarService.detectOverlaps(tasks);
+        if (!warnings.isEmpty()) {
+            System.out.println();
+            System.out.println("⚠ Hinweis:");
+            for (String warning : warnings) {
+                System.out.println(warning);
             }
         }
     }

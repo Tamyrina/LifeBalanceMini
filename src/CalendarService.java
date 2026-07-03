@@ -57,4 +57,49 @@ public class CalendarService {
     public void changeDuration(int index, int newEstimatedDuration) {
         taskService.changeDuration(index, newEstimatedDuration);
     }
+
+    public ArrayList<String> detectOverlaps(ArrayList<Task> tasks) {
+        return detectOverlapsStatic(tasks);
+    }
+
+    public static ArrayList<String> detectOverlapsStatic(ArrayList<Task> tasks) {
+        ArrayList<String> warnings = new ArrayList<>();
+        
+        for (int i = 0; i < tasks.size(); i++) {
+            Task task1 = tasks.get(i);
+            if (task1.getDueDate() == null) continue;
+            int start1 = parseTimeToMinutes(task1.getStartTime());
+            int end1 = start1 + task1.getEstimatedDuration();
+            
+            for (int j = i + 1; j < tasks.size(); j++) {
+                Task task2 = tasks.get(j);
+                // Nur Tasks am selben Tag vergleichen
+                if (!task1.getDueDate().equals(task2.getDueDate())) {
+                    continue;
+                }
+                
+                int start2 = parseTimeToMinutes(task2.getStartTime());
+                int end2 = start2 + task2.getEstimatedDuration();
+                
+                if (timesOverlap(start1, end1, start2, end2)) {
+                    warnings.add("\"" + task1.getTitle() + "\" überschneidet sich mit \"" + task2.getTitle() + "\"");
+                }
+            }
+        }
+        
+        return warnings;
+    }
+
+    public static int parseTimeToMinutesStatic(String time) {
+        String[] parts = time.split(":");
+        return Integer.parseInt(parts[0]) * 60 + Integer.parseInt(parts[1]);
+    }
+
+    private static int parseTimeToMinutes(String time) {
+        return parseTimeToMinutesStatic(time);
+    }
+
+    private static boolean timesOverlap(int start1, int end1, int start2, int end2) {
+        return start1 < end2 && start2 < end1;
+    }
 }
