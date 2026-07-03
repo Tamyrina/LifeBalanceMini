@@ -181,6 +181,13 @@ public class CalendarMenu {
         
         calendarService.moveTask(taskListIndex, newDueDate, newStartTime);
         System.out.println("Aufgabe verschoben.");
+        
+        // Ansicht erneuern
+        if (viewMode.equals("DAY")) {
+            showDayWithCurrentDate();
+        } else {
+            showWeek();
+        }
     }
 
     private void changeDuration() {
@@ -209,6 +216,13 @@ public class CalendarMenu {
         
         calendarService.changeDuration(taskListIndex, newDuration);
         System.out.println("Dauer geändert.");
+        
+        // Ansicht erneuern
+        if (viewMode.equals("DAY")) {
+            showDayWithCurrentDate();
+        } else {
+            showWeek();
+        }
     }
 
     private void displayTasks(ArrayList<Task> tasks) {
