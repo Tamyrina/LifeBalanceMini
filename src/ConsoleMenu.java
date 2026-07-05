@@ -5,7 +5,6 @@ public class ConsoleMenu {
     private TaskService taskService;
     private ProjectService projectService;
     private Scanner scanner;
-    private boolean dashboardShown = false;
 
     public ConsoleMenu(TaskService taskService, ProjectService projectService) {
         this.taskService = taskService;
@@ -14,18 +13,15 @@ public class ConsoleMenu {
     }
 
     public void start() {
+        // Dashboard einmalig beim Start anzeigen
+        CalendarService calendarService = new CalendarService(taskService, projectService);
+        DashboardService dashboardService = new DashboardService(taskService, projectService);
+        DashboardMenu dashboardMenu = new DashboardMenu(dashboardService, calendarService);
+        dashboardMenu.show();
+
         boolean running = true;
 
         while (running) {
-            // Dashboard nur beim ersten Start anzeigen
-            if (!dashboardShown) {
-                CalendarService calendarService = new CalendarService(taskService, projectService);
-                DashboardService dashboardService = new DashboardService(taskService, projectService);
-                DashboardMenu dashboardMenu = new DashboardMenu(dashboardService, calendarService);
-                dashboardMenu.show();
-                dashboardShown = true;
-            }
-
             // Navigationsmenü
             System.out.println();
             System.out.println("=== Navigation ===");
