@@ -1,3 +1,5 @@
+// Stellt alle Daten für das Dashboard bereit.
+// Berechnet Statistiken, Fortschritt und die heutigen Aufgaben.
 import java.time.LocalDate;
 import java.util.ArrayList;
 
@@ -10,7 +12,7 @@ public class DashboardService {
         this.taskService = taskService;
         this.projectService = projectService;
     }
-
+    // Gibt eine Liste aller aktiven Projekte zurück, d.h. Projekte, die noch nicht abgeschlossen sind.
     public ArrayList<Project> getActiveProjects() {
         ArrayList<Project> active = new ArrayList<>();
         for (Project project : projectService.getAllProjects()) {
@@ -20,7 +22,7 @@ public class DashboardService {
         }
         return active;
     }
-
+    // Gibt eine Liste aller Aufgaben zurück, die heute fällig sind.
     public ArrayList<Task> getTodaysTasks() {
         ArrayList<Task> todaysTasks = new ArrayList<>();
         LocalDate today = LocalDate.now();
@@ -36,14 +38,17 @@ public class DashboardService {
         }
         return todaysTasks;
     }
-
+    // Gibt den Projektfortschritt in Prozent zurück, basierend auf der Anzahl der abgeschlossenen Aufgaben im Verhältnis zur Gesamtzahl der Aufgaben im Projekt.
     public int getProjectProgress(String projectTitle) {
         int[] counts = getTaskCountsForProject(projectTitle);
         int total = counts[0];
         int completed = counts[1];
-        return total == 0 ? 0 : (completed * 100 / total);
-    }
-
+             if (total == 0) {
+                return 0;
+             } 
+                return completed * 100 / total;
+         }
+    // Gibt die Anzahl der offenen und der abgeschlossenen Aufgaben für ein bestimmtes Projekt zurück.
     public int[] getTaskCountsForProject(String projectTitle) {
         int total = 0;
         int completed = 0;
@@ -57,7 +62,7 @@ public class DashboardService {
         }
         return new int[]{total, completed};
     }
-
+    // Erstellt eine Fortschrittsanzeige (Progress Bar) basierend auf dem übergebenen Fortschrittswert (0-100).
     public String getProgressBar(int progress) {
         StringBuilder bar = new StringBuilder();
         int filled = progress / 10;

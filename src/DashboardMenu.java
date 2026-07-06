@@ -1,22 +1,16 @@
+// Stellt das Dashboard in der Konsole dar.
+// Zeigt Statistiken, heutige Aufgaben und Projektfortschritte an.
 import java.util.ArrayList;
-import java.util.Scanner;
 
 public class DashboardMenu {
     private DashboardService dashboardService;
-    private Scanner scanner;
     private CalendarService calendarService;
-
-    public DashboardMenu(DashboardService dashboardService) {
-        this.dashboardService = dashboardService;
-        this.scanner = new Scanner(System.in);
-    }
 
     public DashboardMenu(DashboardService dashboardService, CalendarService calendarService) {
         this.dashboardService = dashboardService;
         this.calendarService = calendarService;
-        this.scanner = new Scanner(System.in);
     }
-
+    // Zeigt das Dashboard an, einschließlich aktiver Projekte, heutiger Aufgaben und Warnungen bei Terminüberschneidungen.
     public void show() {
         System.out.println();
         System.out.println("=== Dashboard ===");
@@ -27,7 +21,7 @@ public class DashboardMenu {
         System.out.println();
         showOverlapWarnings();
     }
-
+    // Zeigt alle aktiven Projekte an, einschließlich ihres Fortschritts und der Anzahl der erledigten Aufgaben.
     private void showActiveProjects() {
         System.out.println("Aktive Projekte:");
         if (dashboardService.getActiveProjects().isEmpty()) {
@@ -42,7 +36,8 @@ public class DashboardMenu {
             }
         }
     }
-
+    // Zeigt alle Aufgaben an, die heute fällig sind, sortiert nach Startzeit. 
+    // Berechnet auch die Endzeit basierend auf der geschätzten Dauer.
     private void showTodaysTasks() {
         System.out.println("Heutige Aufgaben:");
         ArrayList<Task> todaysTasks = dashboardService.getTodaysTasks();
@@ -61,7 +56,7 @@ public class DashboardMenu {
             }
         }
     }
-
+    // Zeigt Warnungen an, wenn es Überschneidungen zwischen den heutigen Aufgaben gibt.
     private void showOverlapWarnings() {
         if (calendarService != null) {
             ArrayList<Task> todaysTasks = dashboardService.getTodaysTasks();
@@ -75,7 +70,7 @@ public class DashboardMenu {
             }
         }
     }
-
+    // Berechnet die Endzeit einer Aufgabe basierend auf der Startzeit und der geschätzten Dauer in Minuten.
     private String calculateEndTime(String startTime, int estimatedDuration) {
         String[] parts = startTime.split(":");
         int hour = Integer.parseInt(parts[0]);

@@ -1,3 +1,5 @@
+// Projektmenü der Anwendung.
+// Ermöglicht das Verwalten aller Projekte.
 import java.util.Scanner;
 import java.util.ArrayList;
 
@@ -19,7 +21,7 @@ public class ProjectMenu {
 
     public void show() {
         boolean running = true;
-
+        // Zeigt das Projektnavigationsmenü an.
         while (running) {
             System.out.println();
             System.out.println("=== Projekte ===");
@@ -30,9 +32,9 @@ public class ProjectMenu {
             System.out.println("5. Aufgaben eines Projekts anzeigen");
             System.out.println("0. Zurück");
             System.out.print("Auswahl: ");
-
+            // Liest die Auswahl des Benutzers ein.
             String input = scanner.nextLine();
-
+            // Benutzereingabe auswerten und entsprechende Methode aufrufen
             if (input.equals("1")) {
                 addProject();
             } else if (input.equals("2")) {
@@ -50,7 +52,7 @@ public class ProjectMenu {
             }
         }
     }
-
+    // Methode zum Hinzufügen eines neuen Projekts. Liest die Eingaben des Benutzers ein und erstellt ein neues Projekt.
     private void addProject() {
         System.out.println();
         System.out.println("Neues Projekt anlegen");
@@ -60,19 +62,19 @@ public class ProjectMenu {
 
         System.out.print("Kategorie: ");
         String category = scanner.nextLine();
-
+        // Liest das Fälligkeitsdatum und die Startzeit ein und überprüft das Format.
         System.out.print("Fälligkeitsdatum (TT.MM.JJJJ): ");
         String dueDate = readValidDate();
-
+        // Liest die Fälligkeitszeit ein und überprüft das Format.
         System.out.print("Fälligkeitszeit (HH:MM): ");
         String dueTime = readValidTime();
-
+        // Erstellt das neue Projekt und fügt sie über den ProjectService hinzu.
         Project project = new Project(title, category, dueDate, dueTime);
         projectService.addProject(project);
 
         System.out.println("Projekt wurde hinzugefügt.");
     }
-
+    // Methode zeigt die Liste aller Projekte an, wenn welche vorhanden sind.
     private void showProjects() {
         System.out.println();
         System.out.println("Alle Projekte:");
@@ -87,19 +89,19 @@ public class ProjectMenu {
             }
         }
     }
-
+    // Methode zum Löschen eines Projekts.
     private void deleteProject() {
         System.out.println();
         System.out.println("Projekt löschen");
-
+        // Beendet die Methode, wenn keine Projekte vorhanden sind.
         if (projectService.getAllProjects().isEmpty()) {
             System.out.println("Es gibt keine Projekte zum Löschen.");
             return;
         }
 
         showProjects();
-
-        int index = readProjectIndex("Welches Projekt soll gelöscht werden? Nummer eingeben (0 für zurück): ");
+        // Liest die Projektnummer ein und löscht das Projekt über den ProjectService oder beendet den Vorgang, wenn die Eingabe = 0 (-1) ist.
+        int index = selectProject("Projekt löschen");
         if (index < 0) return;
 
         projectService.removeProject(index);
@@ -110,15 +112,15 @@ public class ProjectMenu {
     private void editProject() {
         System.out.println();
         System.out.println("Projekt bearbeiten");
-
+        // Beendet die Methode, wenn keine Projekte vorhanden sind.
         if (projectService.getAllProjects().isEmpty()) {
             System.out.println("Es gibt keine Projekte.");
             return;
         }
-
+        // Zeigt die Liste aller Projekte an.
         showProjects();
-
-        int index = readProjectIndex("Welches Projekt soll bearbeitet werden? Nummer eingeben (0 für zurück): ");
+        // Liest die Projektnummer ein und bearbeitet das Projekt über den ProjectService oder beendet den Vorgang, wenn die Eingabe = 0 (-1) ist.
+        int index = selectProject("Projekt bearbeiten");
         if (index < 0) return;
 
         System.out.print("Neuer Titel: ");
@@ -137,19 +139,19 @@ public class ProjectMenu {
 
         System.out.println("Projekt " + (index + 1) + " wurde bearbeitet.");
     }
-
+    // Methode zum Anzeigen der Aufgaben eines Projekts.
     private void showProjectTasks() {
         System.out.println();
         System.out.println("Aufgaben eines Projekts anzeigen");
-
+        // Beendet die Methode, wenn keine Projekte vorhanden sind.
         if (projectService.getAllProjects().isEmpty()) {
             System.out.println("Es gibt keine Projekte.");
             return;
         }
 
         showProjects();
-
-        int index = readProjectIndex("Welches Projekt? Nummer eingeben (0 für zurück): ");
+        // Liest die Projektnummer ein und zeigt die Aufgaben des Projekts an oder beendet den Vorgang, wenn die Eingabe = 0 (-1) ist.
+        int index = selectProject("Aufgaben anzeigen");
         if (index < 0) return;
 
         String projectName = projectService.getAllProjects().get(index).getTitle();
@@ -170,36 +172,53 @@ public class ProjectMenu {
             }
         }
     }
-
+    // Methode zum Abrufen der Aufgaben eines Projekts über den TaskService.
     private ArrayList<Task> getTasksForProject(String projectName) {
         if (taskService == null) {
             return new ArrayList<>();
         }
         return taskService.getTasksForProject(projectName);
     }
+    // Methode zum Auswählen eines Projekts aus der Liste. 
+    private int selectProject(String actionDescription) {
+        ArrayList<Project> projects = projectService.getAllProjects();
+        // Beendet die Methode, wenn keine Projekte vorhanden sind.
+        if (projects.isEmpty()) {
+            return -1;
+        }
+        // Zeigt die Liste aller Projekte an und liest die Projektnummer ein. 
+        System.out.println();
+        System.out.println(actionDescription);
+        for (int i = 0; i < projects.size(); i++) {
+            System.out.println((i + 1) + ". " + projects.get(i).getTitle());
+        }
+        System.out.println("0. Abbrechen");
+        System.out.print("Projektnummer: ");
 
-    private int readProjectIndex(String prompt) {
         while (true) {
-            System.out.print(prompt);
             String input = scanner.nextLine();
-            
+            // Überprüft, ob die Eingabe eine gültige Zahl ist und ob sie innerhalb des gültigen Bereichs liegt. 
+            // Gibt den Index des ausgewählten Projekts zurück oder -1, wenn die Eingabe 0 ist.
             try {
                 int number = Integer.parseInt(input);
                 if (number == 0) {
                     return -1;
                 }
                 int index = number - 1;
-                if (index < 0 || index >= projectService.getAllProjects().size()) {
+                if (index < 0 || index >= projects.size()) {
                     System.out.println("Ungültige Nummer. Bitte erneut versuchen.");
+                    System.out.print("Projektnummer: ");
                     continue;
                 }
                 return index;
             } catch (NumberFormatException e) {
                 System.out.println("Ungültige Eingabe. Bitte erneut versuchen.");
+                System.out.print("Projektnummer: ");
             }
         }
     }
-
+    // Methode zum Prüfen eines vom Benutzer eingegebenen Datums. 
+    // Wenn das Format ungültig ist, wird der Benutzer aufgefordert, erneut ein Datum einzugeben.
     private String readValidDate() {
         while (true) {
             String date = scanner.nextLine();
@@ -210,7 +229,8 @@ public class ProjectMenu {
             System.out.print("Fälligkeitsdatum (TT.MM.JJJJ): ");
         }
     }
-
+    // Methode zum Prüfen einer vom Benutzer eingegebenen Zeit. 
+    // Wenn das Format ungültig ist, wird der Benutzer aufgefordert, erneut eine Zeit einzugeben.
     private String readValidTime() {
         while (true) {
             String time = scanner.nextLine();
@@ -221,7 +241,7 @@ public class ProjectMenu {
             System.out.print("Fälligkeitszeit (HH:MM): ");
         }
     }
-
+    // Prüft die Gültigkeit eines Datums im Format TT.MM.JJJJ. Gibt true zurück, wenn das Datum gültig ist, andernfalls false.
     private boolean isValidDate(String date) {
         if (date == null || date.isEmpty()) return false;
         String[] parts = date.split("\\.");
@@ -235,7 +255,7 @@ public class ProjectMenu {
             return false;
         }
     }
-
+    // Prüft die Gültigkeit einer Zeit im Format HH:MM. Gibt true zurück, wenn die Zeit gültig ist, andernfalls false.
     private boolean isValidTime(String time) {
         if (time == null || time.isEmpty()) return false;
         String[] parts = time.split(":");
