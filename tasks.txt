@@ -1,2 +1,3 @@
 Malen;04.07.2026;12:00;120;;test;false
 Geld;05.07.2026;14:00;300;;test;false
+Kunst;04.07.2026;12:00;120;;test;false

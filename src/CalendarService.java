@@ -58,8 +58,13 @@ public class CalendarService {
     public void changeDuration(int index, int newEstimatedDuration) {
         taskService.changeDuration(index, newEstimatedDuration);
     }
-    // Ruft die Methode detectOverlapsStatic auf, um Überschneidungen in den Aufgaben zu detektieren.
+    // Versucht zuerst, Überschneidungen über den CalendarWorkerServer zu prüfen.
+    // Wenn der Server nicht erreichbar ist, wird die lokale Prüfung verwendet.
     public ArrayList<String> detectOverlaps(ArrayList<Task> tasks) {
+        ArrayList<String> remoteWarnings = CalendarWorkerClient.sendTasksAndGetWarnings(tasks);
+        if (remoteWarnings != null) {
+            return remoteWarnings;
+        }
         return detectOverlapsStatic(tasks);
     }
     // Methode zum Detektieren von Überschneidungen zwischen Aufgaben. 
