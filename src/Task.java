@@ -1,9 +1,6 @@
-/*
- * Diese Klasse beschreibt eine Aufgabe in der LifeBalance-App.
- * Jede Aufgabe besitzt einen Titel, ein Fälligkeitsdatum,
- * eine Wiederholung und einen Erledigt-Status.
- */
-// Attribute einer Aufgabe
+// Repräsentiert eine einzelne Aufgabe der Anwendung.
+// Speichert alle Informationen einer Aufgabe, wie Titel,
+// Datum, Uhrzeit, Dauer, Projekt und Bearbeitungsstatus.
 public class Task { 
     private String title;
     private String dueDate;
@@ -80,7 +77,7 @@ private String project;
     public void setCompleted(boolean completed) {
         this.completed = completed;
     }
-
+    // Gibt die wichtigsten Informationen einer Aufgabe als formatierten Text zurück.
     @Override
     public String toString() {
         return "Titel: " + title +

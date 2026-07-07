@@ -18,7 +18,7 @@ public class ConsoleMenu {
     public void start() {
         // Erstellt die benötigten Services und zeigt
         // beim Programmstart einmalig das Dashboard an.
-        CalendarService calendarService = new CalendarService(taskService, projectService);
+        CalendarService calendarService = new CalendarService(taskService);
         DashboardService dashboardService = new DashboardService(taskService, projectService);
         DashboardMenu dashboardMenu = new DashboardMenu(dashboardService, calendarService);
         dashboardMenu.show();
@@ -56,7 +56,7 @@ public class ConsoleMenu {
     }
     // Erstellt das Dashboard und zeigt die aktuelle Übersicht an.
     private void showDashboard() {
-        CalendarService calendarService = new CalendarService(taskService, projectService);
+        CalendarService calendarService = new CalendarService(taskService);
         DashboardService dashboardService = new DashboardService(taskService, projectService);
         DashboardMenu dashboardMenu = new DashboardMenu(dashboardService, calendarService);
         dashboardMenu.show();
@@ -73,7 +73,7 @@ public class ConsoleMenu {
     }
     // Methode zum Anzeigen des Kalendermenüs
     private void showCalendar() {
-        CalendarService calendarService = new CalendarService(taskService, projectService);
+        CalendarService calendarService = new CalendarService(taskService);
         CalendarMenu calendarMenu = new CalendarMenu(calendarService);
         calendarMenu.show();
     }

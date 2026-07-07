@@ -1,8 +1,6 @@
-/*
- * Diese Klasse beschreibt ein Projekt in der LifeBalance-App.
- * Ein Projekt besitzt einen Titel, eine Kategorie, ein Fälligkeitsdatum,
- * eine Fälligkeitszeit und einen Erledigt-Status.
- */
+// Repräsentiert eine einzelne Projekt der Anwendung.
+// Speichert alle Informationen eines Projekts, wie Titel,
+// Kategorie, Datum, Uhrzeit und Bearbeitungsstatus.
 public class Project {
     private String title;
     private String category;
@@ -17,7 +15,7 @@ public class Project {
         this.dueTime = dueTime;
         this.completed = false;
     }
-
+    //Getter
     public String getTitle() {
         return title;
     }
@@ -37,7 +35,7 @@ public class Project {
     public boolean isCompleted() {
         return completed;
     }
-
+    // Setter
     public void setTitle(String title) {
         this.title = title;
     }
@@ -57,7 +55,7 @@ public class Project {
     public void setCompleted(boolean completed) {
         this.completed = completed;
     }
-
+    // Gibt die wichtigsten Informationen eines Projekts als formatierten Text zurück.
     @Override
     public String toString() {
         return "Titel: " + title +

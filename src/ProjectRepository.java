@@ -1,3 +1,5 @@
+// Verwaltet das Speichern und Laden der Projekte.
+// Stellt die Verbindung zwischen der Anwendung und der gespeicherten Datei her.
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -6,9 +8,10 @@ import java.util.ArrayList;
 import java.util.Scanner;
 
 public class ProjectRepository {
-
+    // Dateiname, unter dem die Projekte gespeichert werden.
     private String fileName = "projects.txt";
-
+    // Speichert die Liste der Projekte in einer Datei. 
+    // Jede Projekt wird in einer neuen Zeile gespeichert, wobei die Attribute durch Semikolons getrennt sind.
     public void saveProjects(ArrayList<Project> projectList) {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(fileName))) {
             for (Project project : projectList) {
@@ -16,11 +19,14 @@ public class ProjectRepository {
                 writer.write(line);
                 writer.newLine();
             }
-        } catch (IOException e) {
+        } 
+        // Fängt IOExceptions ab, die beim Schreiben in die Datei auftreten können, und gibt eine Fehlermeldung aus.
+        catch (IOException e) {
             System.out.println("Fehler beim Speichern der Projekte.");
         }
     }
-
+    // Lädt die Liste der Projekte aus der Datei.
+    // Jede Zeile wird in ein Project-Objekt umgewandelt und zur Liste hinzugefügt.
     public ArrayList<Project> loadProjects() {
         ArrayList<Project> projectList = new ArrayList<>();
 

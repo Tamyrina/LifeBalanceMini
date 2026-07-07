@@ -1,16 +1,17 @@
+// Verwaltet die Kalenderlogik der Anwendung.
+// Bereitet Aufgaben für die Tages- und Wochenansicht auf
+// und prüft Aufgaben auf zeitliche Überschneidungen.
 import java.time.LocalDate;
 import java.util.ArrayList;
 
 public class CalendarService {
 
     private TaskService taskService;
-    private ProjectService projectService;
 
-    public CalendarService(TaskService taskService, ProjectService projectService) {
+    public CalendarService(TaskService taskService) {
         this.taskService = taskService;
-        this.projectService = projectService;
     }
-
+    // Gibt alle Aufgaben zurück, die für das heutige Datum geplant sind.
     public ArrayList<Task> getTasksForToday() {
         LocalDate today = LocalDate.now();
         String todayString = String.format("%02d.%02d.%04d", 
@@ -26,7 +27,7 @@ public class CalendarService {
         }
         return todaysTasks;
     }
-
+    // Gibt alle Aufgaben zurück, die für ein bestimmtes Datum geplant sind.
     public ArrayList<Task> getTasksForDate(String date) {
         ArrayList<Task> tasksForDate = new ArrayList<>();
         for (Task task : taskService.getAllTasks()) {
@@ -36,7 +37,7 @@ public class CalendarService {
         }
         return tasksForDate;
     }
-
+    // Gibt die Daten der Woche zurück, die das angegebene Datum enthält, beginnend mit Montag.
     public ArrayList<LocalDate> getWeekDates(LocalDate date) {
         ArrayList<LocalDate> weekDates = new ArrayList<>();
         LocalDate startOfWeek = date.minusDays(date.getDayOfWeek().getValue() - 1);
@@ -45,23 +46,24 @@ public class CalendarService {
         }
         return weekDates;
     }
-
+    // Ruft die Methode getTasksForDate auf, um alle Aufgaben für ein bestimmtes Datum zu erhalten.
     public ArrayList<Task> getAllTasks() {
         return taskService.getAllTasks();
     }
-
+    // Ruft die Methode moveTask auf, um eine Aufgabe zu verschieben.
     public void moveTask(int index, String newDueDate, String newStartTime) {
         taskService.moveTask(index, newDueDate, newStartTime);
     }
-
+    // Ruft die Methode changeDuration auf, um die geschätzte Dauer einer Aufgabe zu ändern.
     public void changeDuration(int index, int newEstimatedDuration) {
         taskService.changeDuration(index, newEstimatedDuration);
     }
-
+    // Ruft die Methode detectOverlapsStatic auf, um Überschneidungen in den Aufgaben zu detektieren.
     public ArrayList<String> detectOverlaps(ArrayList<Task> tasks) {
         return detectOverlapsStatic(tasks);
     }
-
+    // Methode zum Detektieren von Überschneidungen zwischen Aufgaben. 
+    // Gibt eine Liste von Warnungen zurück, wenn Überschneidungen gefunden werden.
     public static ArrayList<String> detectOverlapsStatic(ArrayList<Task> tasks) {
         ArrayList<String> warnings = new ArrayList<>();
         
@@ -89,7 +91,7 @@ public class CalendarService {
         
         return warnings;
     }
-
+    // Parst eine Zeit im Format HH:MM in die Gesamtzahl der Minuten seit Mitternacht.
     public static int parseTimeToMinutesStatic(String time) {
         String[] parts = time.split(":");
         return Integer.parseInt(parts[0]) * 60 + Integer.parseInt(parts[1]);
@@ -98,7 +100,7 @@ public class CalendarService {
     private static int parseTimeToMinutes(String time) {
         return parseTimeToMinutesStatic(time);
     }
-
+    // Prüft, ob zwei Zeitintervalle sich überschneiden.
     private static boolean timesOverlap(int start1, int end1, int start2, int end2) {
         return start1 < end2 && start2 < end1;
     }
