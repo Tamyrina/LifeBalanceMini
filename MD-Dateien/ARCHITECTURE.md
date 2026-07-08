@@ -1,6 +1,6 @@
 \# Architecture
 
-Last updated: 03.07.2026
+Last updated: 08.07.2026
 
 \## Overview
 
@@ -356,7 +356,27 @@ It uses:
 
 \---
 
+## Distributed Architecture
 
+To meet the requirements of a distributed application, the overlap detection was moved into a separate worker process.
+
+The main application is responsible for the user interface and the business logic. When overlap detection is required, the `CalendarWorkerClient` sends the relevant task data to the `CalendarWorkerServer` via a TCP socket (port 9090).
+
+The `CalendarWorkerServer` receives the tasks, checks them for time overlaps and sends the detected warnings back to the client. The main application then displays these warnings to the user.
+
+Communication flow:
+
+CalendarMenu
+→ CalendarService
+→ CalendarWorkerClient
+→ TCP Socket (Port 9090)
+→ CalendarWorkerServer
+→ detectOverlapsStatic()
+→ Warnings returned to the client
+
+If the worker server is not available, the application automatically falls back to the local overlap detection. This ensures that the application remains fully functional.
+
+The distributed design separates the user interface from the overlap detection logic by running them in two independent Java processes that communicate over TCP sockets.
 
 \## Project Module
 

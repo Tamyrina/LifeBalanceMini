@@ -123,6 +123,14 @@ The calendar itself does not store any data.
 
 ---
 
+## Distributed Component
+
+To extend the application, the calendar overlap detection was implemented as a distributed component.
+
+Instead of performing the overlap check only inside the main application, the task data can be sent to a separate `CalendarWorkerServer`. The server processes the received tasks independently and returns any detected overlap warnings to the client.
+
+This approach demonstrates a distributed architecture with two independent Java processes communicating via TCP sockets.
+
 # General Design
 
 The application consists of independent modules.
@@ -137,6 +145,7 @@ The ConsoleMenus are responsible only for user interaction.
 
 The implementation should remain simple, modular and easy to understand.
 
+---
 
 # Development Philosophy
 
